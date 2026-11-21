@@ -47,7 +47,6 @@ jobs:
               <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
               <application
                   android:label="耳机跟读训练器"
-                  android:name="${applicationName}"
                   android:icon="@mipmap/ic_launcher">
                   <activity
                       android:name=".MainActivity"
@@ -69,11 +68,7 @@ jobs:
           EOF
           echo "Manifest injected"
 
-      - name: Set minSdkVersion
-        shell: bash
-        run: |
-          sed -i 's/minSdkVersion 24/minSdkVersion 23/' android/app/build.gradle || true
-          grep -n "minSdkVersion" android/app/build.gradle
+      # Flutter 3.50 默认 minSdkVersion=24（flutter.minSdkVersion），已满足 sherpa-onnx(>=21) 需求，无需修改
 
       - name: Get dependencies
         run: flutter pub get
