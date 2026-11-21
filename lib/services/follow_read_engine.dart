@@ -67,7 +67,7 @@ class FollowReadEngine {
       final genDuration = generated.sampleRate > 0
           ? genSamples.length / generated.sampleRate
           : 0.0;
-      final wav = audio.float32ToWavBytes(genSamples, generated.sampleRate);
+      final wav = AudioService.float32ToWavBytes(genSamples, generated.sampleRate);
 
       // 2) 播放 + 录音（未通过在本句重试）
       var attempt = 0;

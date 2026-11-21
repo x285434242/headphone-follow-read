@@ -46,7 +46,11 @@ List<String> splitIntoSentences(String text) {
 /// 比对归一化：去标点/空白、统一小写、常见数字与全角处理。
 String _normalize(String text) {
   var s = text.toLowerCase();
-  s = s.replaceAll(RegExp(r'[\s，。！？、；：,.!?;:"\'“”‘’()（）\[\]【】—…·]+'), '');
+  // 用 Unicode 码点转义避免 Dart 字符串引号冲突（\u{201C}=\u201c 等）
+  const punct = r'[\s，。！？、；：,.!?;:'
+      '\u{22}\u{27}\u{201C}\u{201D}\u{2018}\u{2019}'  // " ' " " ' '
+      r'()（）\[\]【】—…·]+';
+  s = s.replaceAll(RegExp(punct), '');
   return s;
 }
 

@@ -3,7 +3,7 @@ import '../core/models.dart';
 import '../core/storage.dart';
 import '../core/text_utils.dart' as text;
 import '../services/follow_read_engine.dart';
-import '../services/model_paths.dart' as ModelPaths;
+import '../services/model_paths.dart';
 import '../core/globals.dart' show speechEngine, audioService;
 
 class FollowReadScreen extends StatefulWidget {
