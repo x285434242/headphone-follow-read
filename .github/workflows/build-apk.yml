@@ -68,7 +68,20 @@ jobs:
           EOF
           echo "Manifest injected"
 
-      # Flutter 3.50 默认 minSdkVersion=24（flutter.minSdkVersion），已满足 sherpa-onnx(>=21) 需求，无需修改
+      # 提高 compileSdk：flutter_plugin_android_lifecycle 等依赖要求 API 36+
+      - name: Bump compileSdk to 36
+        shell: bash
+        run: |
+          F=android/app/build.gradle.kts
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' "$F"
+          # 保险：若是 Groovy 写法
+          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 36/' android/app/build.gradle 2>/dev/null || true
+          grep -n "compileSdk" "$F"
+
+      # 删除 flutter create 自动生成的示例测试（引用了不存在的 material_ui，导致 analyze 报错）
+      - name: Remove stub test
+        shell: bash
+        run: rm -f test/widget_test.dart
 
       - name: Get dependencies
         run: flutter pub get
