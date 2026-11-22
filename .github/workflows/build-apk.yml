@@ -94,18 +94,16 @@ jobs:
 
           subprojects {
               project.buildDir = file("${rootProject.buildDir}/${project.name}")
-          }
-          subprojects {
-              project.evaluationDependsOn(":app")
-          }
-
-          // 强制所有插件模块 compileSdk=36，满足最新 Android lifecycle AAR 要求
-          subprojects {
+              // 强制所有插件模块 compileSdk=36，满足最新 Android lifecycle AAR 要求
+              // 必须在 evaluationDependsOn 之前注册 afterEvaluate，否则 project 已 evaluated 会报错
               afterEvaluate {
                   extensions.findByType(com.android.build.gradle.BaseExtension::class.java)?.let {
                       it.compileSdkVersion(36)
                   }
               }
+          }
+          subprojects {
+              project.evaluationDependsOn(":app")
           }
 
           tasks.register<Delete>("clean") {
