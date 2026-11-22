@@ -68,15 +68,51 @@ jobs:
           EOF
           echo "Manifest injected"
 
-      # 提高 compileSdk：flutter_plugin_android_lifecycle 等依赖要求 API 36+
-      - name: Bump compileSdk to 36
+      # 主 app compileSdk 提到 36
+      - name: Bump app compileSdk to 36
         shell: bash
         run: |
           F=android/app/build.gradle.kts
           sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' "$F"
-          # 保险：若是 Groovy 写法
           sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 36/' android/app/build.gradle 2>/dev/null || true
           grep -n "compileSdk" "$F"
+
+      # 关键：强制所有插件子项目也用 compileSdk 36
+      # 否则 file_picker 等老插件停在 android-34，与要求 API 36 的 lifecycle AAR 冲突
+      - name: Force subprojects compileSdk 36
+        shell: bash
+        run: |
+          cat > android/build.gradle.kts <<'EOF'
+          allprojects {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+
+          rootProject.buildDir = file("../build")
+
+          subprojects {
+              project.buildDir = file("${rootProject.buildDir}/${project.name}")
+          }
+          subprojects {
+              project.evaluationDependsOn(":app")
+          }
+
+          // 强制所有插件模块 compileSdk=36，满足最新 Android lifecycle AAR 要求
+          subprojects {
+              afterEvaluate {
+                  extensions.findByType(com.android.build.gradle.BaseExtension::class.java)?.let {
+                      it.compileSdkVersion(36)
+                  }
+              }
+          }
+
+          tasks.register<Delete>("clean") {
+              delete(rootProject.buildDir)
+          }
+          EOF
+          echo "root build.gradle.kts overwritten with forced compileSdk"
 
       # 删除 flutter create 自动生成的示例测试（引用了不存在的 material_ui，导致 analyze 报错）
       - name: Remove stub test
